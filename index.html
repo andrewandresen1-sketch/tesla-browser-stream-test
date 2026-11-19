@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Tesla 720p real-time player · Phase 11</title>
+<style>
+  :root{--bg:#0b0d12;--panel:#141824;--panel2:#10141e;--line:#2a3042;--text:#e9edf6;--muted:#9aa3b8;--ok:#3ddc97;--no:#ff6b6b;--warn:#ffb020;--info:#69a8ff}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+  body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:18px}
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:26px;line-height:1.2;margin:0 0 6px}
+  h2{font-size:18px;margin:0 0 10px}
+  p{margin:0 0 10px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 16px}
+  .danger{border-left:6px solid var(--no);background:rgba(255,107,107,.08)}
+  .danger strong{color:var(--no)}
+  .verdict{font-size:20px;font-weight:700;line-height:1.3;margin:0 0 8px}
+  .verdict small{display:block;font-weight:400;color:var(--muted);font-size:14px;margin-top:8px}
+  .chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700}
+  .chip.ok{background:rgba(61,220,151,.15);color:var(--ok)}
+  .chip.no{background:rgba(255,107,107,.15);color:var(--no)}
+  .chip.warn{background:rgba(255,176,32,.16);color:var(--warn)}
+  .chip.info{background:rgba(105,168,255,.15);color:var(--info)}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:8px 7px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  td.k{color:var(--muted);width:44%}
+  .mono{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+  .small{font-size:13px;color:var(--muted)}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;font-weight:600}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);font:15px/1.4 system-ui,sans-serif;padding:10px}
+  textarea{min-height:160px;font-family:ui-monospace,Consolas,monospace;font-size:12px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;grid-gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;grid-gap:12px}
+  .keygrid{display:grid;grid-template-columns:1fr 1fr;grid-gap:10px}
+  .keyitem{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .keyitem b{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 3px}
+  .keyitem span{font-size:19px;font-weight:700;word-break:break-word}
+  .keyitem span.ok{color:var(--ok)}
+  .keyitem span.no{color:var(--no)}
+  .keyitem span.warn{color:var(--warn)}
+  button{font:700 16px system-ui,sans-serif;padding:13px 16px;border-radius:10px;border:1px solid var(--line);background:#1e2536;color:var(--text);margin:0 10px 10px 0;min-width:140px}
+  button.primary{background:#243a5e;border-color:#31527f}
+  button:disabled{opacity:.45}
+  button:active{transform:translateY(1px)}
+  .check{display:flex;align-items:flex-start;grid-gap:10px;margin:10px 0}
+  .check input{width:22px;height:22px;margin-top:2px}
+  .check label{margin:0;color:var(--text);font-size:15px;font-weight:400}
+  pre{white-space:pre-wrap;word-break:break-word;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:12px;margin:0;max-height:220px;overflow:auto}
+  .stage{position:relative;background:#000;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:10px 0}
+  .stage.flash{box-shadow:inset 0 0 0 6px #fff}
+  canvas{display:block;width:100%;height:auto;background:#000}
+  .overlay{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.65);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--text);white-space:pre}
+  .footer{color:var(--muted);font-size:12px;line-height:1.5;margin:18px 0 8px}
+  ul{margin:0 0 8px 18px;padding:0}
+  li{margin:0 0 6px}
+  @media (max-width:760px){body{padding:12px}h1{font-size:22px}.row2,.row3,.keygrid{grid-template-columns:1fr}td.k{width:52%}button{width:100%;margin-right:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tesla 720p real-time player</h1>
+  <p class="sub">Phase 11 · paced WebCodecs decode · OffscreenCanvas worker · 1280×720 @ 30 fps · parked only</p>
+
+  <div class="panel danger">
+    <strong>PARKED ONLY.</strong> This page runs a real-time decoder and canvas renderer. It is for a
+    parked vehicle, operated by a passenger. It does not detect or bypass driving state.
+  </div>
+
+  <noscript><div class="panel"><strong>JavaScript is disabled.</strong></div></noscript>
+
+  <div class="panel">
+    <h2>Start</h2>
+    <div class="check">
+      <input type="checkbox" id="confirm">
+      <label for="confirm">The vehicle is parked and a passenger is operating this page.</label>
+    </div>
+    <div class="row3">
+      <div>
+        <label for="lead">Decode lead</label>
+        <select id="lead">
+          <option value="300" selected>300 ms</option>
+          <option value="600">600 ms</option>
+          <option value="1000">1000 ms</option>
+        </select>
+      </div>
+      <div>
+        <label for="loops">Duration (6 s clip, looped)</label>
+        <select id="loops">
+          <option value="1">6 s</option>
+          <option value="2" selected>12 s</option>
+          <option value="10">60 s</option>
+          <option value="50">5 min</option>
+          <option value="150">15 min</option>
+        </select>
+      </div>
+      <div>
+        <label for="render">Render</label>
+        <select id="render">
+          <option value="worker" selected>OffscreenCanvas worker</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label for="audio">Audio sync test</label>
+        <select id="audio">
+          <option value="tone" selected>Generated sync tone (beeps each second)</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
+      <div>
+        <label for="simulate">Desktop simulation (0 on the car)</label>
+        <select id="simulate">
+          <option value="0" selected>none</option>
+          <option value="5">+5 ms/frame</option>
+          <option value="10">+10 ms/frame</option>
+          <option value="20">+20 ms/frame</option>
+        </select>
+      </div>
+    </div>
+    <button class="primary" id="startBtn" type="button" disabled>Play in real time</button>
+    <button id="pauseBtn" type="button" disabled>Pause</button>
+    <button id="stopBtn" type="button" disabled>Stop</button>
+    <button id="resetBtn" type="button" onclick="location.reload()">Reset (reload)</button>
+    <p class="small" id="status">Check the box to enable playback. The player fetches one local 720p clip (~2.6 MB) after Start.</p>
+    <div class="small mono" id="log" aria-live="polite"></div>
+  </div>
+
+  <div class="panel">
+    <div class="verdict" id="verdictLine">Not started</div>
+    <div class="small" id="verdictSub">No video has been decoded yet.</div>
+    <div id="verdictExtra"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Live output</h2>
+    <div class="stage">
+      <canvas id="out" width="1280" height="720"></canvas>
+      <div class="overlay" id="overlay">—</div>
+    </div>
+    <table id="liveTable"><tbody></tbody></table>
+  </div>
+
+  <div class="panel">
+    <h2>Key values — photograph this</h2>
+    <div class="keygrid" id="keyGrid"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Vehicle details (pre-filled, edit if needed)</h2>
+    <div class="row2">
+      <div><label for="inModel">Model and year</label><input id="inModel" value="Model 3 · 2021" autocomplete="off"></div>
+      <div><label for="inSw">Tesla software version</label><input id="inSw" value="2026.38.5.11" autocomplete="off"></div>
+    </div>
+    <div class="row2">
+      <div><label for="inCpu">Infotainment processor</label><input id="inCpu" value="Intel Atom (MCU2)" autocomplete="off"></div>
+      <div><label for="inNotes">Notes (optional)</label><input id="inNotes" placeholder="e.g. browser foreground, screen brightness" autocomplete="off"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Final metrics</h2>
+    <table id="finalTable"><tbody></tbody></table>
+  </div>
+
+  <div class="panel">
+    <h2>Export the result</h2>
+    <p class="small">Generated in this tab. The only network request is the local clip. Nothing is uploaded.</p>
+    <button class="primary" id="btnCopy" type="button">Copy JSON</button>
+    <button id="btnDownload" type="button">Download JSON</button>
+    <button id="btnSelect" type="button">Select all</button>
+    <div class="small" id="copyStatus" aria-live="polite"></div>
+    <label for="jsonOut">JSON result</label>
+    <textarea id="jsonOut" readonly spellcheck="false"></textarea>
+    <label for="shortOut">Short code (photograph or type this if copy fails)</label>
+    <pre id="shortOut" class="mono">—</pre>
+  </div>
+
+  <div class="panel">
+    <h2>What this page does not do</h2>
+    <ul>
+      <li>It does not detect or bypass driving state. The checkbox is a human confirmation.</li>
+      <li>It does not upload results. It fetches one same-origin clip.</li>
+      <li>It does not request camera, microphone, location or vehicle permissions.</li>
+      <li>It does not test DRM, Netflix, or any access-controlled service.</li>
+      <li>It is a video-only player; audio synchronization is out of scope here.</li>
+      <li>It plays a local file in real time; it is not a network protocol or adaptive-bitrate test.</li>
+    </ul>
+  </div>
+
+  <div class="footer"><span class="mono" id="pageVersion">phase11-1</span> · Phase 11 · sample media generated locally by the project.</div>
+</div>
+
+<script type="text/js-worker" id="workerSrc">
+"use strict";
+var ctx = null, canvasW = 1280, canvasH = 720;
+var config = null, samples = null, bytes = null;
+var decoder = null;
+var opts = { leadMs: 300, maxDecodeQueue: 6, maxFrameQueue: 16, lateMs: 50, loops: 2, targetFps: 30, simulateFrameCostMs: 0 };
+var playing = false, stopped = false, started = false;
+var firstTsUs = 0, durationUs = 0, mediaOffsetUs = 0, playbackStart = 0;
+var loopOffsetUs = 0;
+var nextSample = 0, frames = [], flushed = false, done = false, loop = 0;
+var startedAt = 0, lastStatsAt = 0, lastPresentedMediaUs = 0, lastPresentedAt = 0;
+var stallSince = 0, rebuffering = false;
+var stats = {
+  presented: 0, dropped: 0, late: 0, stalls: 0, rebuffers: 0,
+  errors: 0, recoveries: 0, decodeQueueMax: 0, frameQueueMax: 0,
+  queueDrops: 0, submitted: 0, ticks: 0, presentCalls: 0,
+  paintMs: [], bufferedMinMs: null, bufferedMaxMs: 0,
+  firstFrameTs: null, lastFrameTs: null, firstPresentedTs: null, lastPresentedTs: null,
+  firstPresentedAt: 0, beeps: 0, lastBeepSec: -1, syncCorrections: 0
+};
+
+function now() { return performance.now(); }
+function percentile(values, p) {
+  if (!values.length) return null;
+  var v = values.slice().sort(function (a, b) { return a - b; });
+  var i = Math.min(v.length - 1, Math.max(0, Math.ceil((p / 100) * v.length) - 1));
+  return +v[i].toFixed(3);
+}
+function mediaNowUs() {
+  if (!playing) return firstTsUs + mediaOffsetUs;
+  return firstTsUs + mediaOffsetUs + (now() - playbackStart) * 1000;
+}
+function post(msg) { self.postMessage(msg); }
+
+function makeDecoder() {
+  if (decoder) { try { decoder.close(); } catch (e) {} }
+  decoder = new VideoDecoder({ output: onFrame, error: onError });
+  decoder.configure(config);
+}
+
+function onFrame(frame) {
+  if (stats.firstFrameTs === null) stats.firstFrameTs = frame.timestamp;
+  stats.lastFrameTs = frame.timestamp;
+  if (frames.length >= opts.maxFrameQueue) {
+    // Drop the frame that just arrived, never the oldest: the oldest is the
+    // one due next, and discarding it creates a permanent presentation lag.
+    try { frame.close(); } catch (e) {}
+    stats.queueDrops++;
+    stats.dropped++;
+    return;
+  }
+  frames.push({ frame: frame, tsUs: frame.timestamp });
+  stats.frameQueueMax = Math.max(stats.frameQueueMax, frames.length);
+}
+
+function onError(e) {
+  stats.errors++;
+  post({ type: "error", message: String((e && e.message) || e), recoveries: stats.recoveries });
+  recover();
+}
+
+function recover() {
+  if (stopped || stats.recoveries >= 3) { finish(); return; }
+  stats.recoveries++;
+  for (var i = 0; i < frames.length; i++) { try { frames[i].frame.close(); } catch (e) {} }
+  frames = [];
+  var target = mediaNowUs();
+  var idx = 0;
+  for (var j = 0; j < samples.length; j++) {
+    if (samples[j].isKey && samples[j].ctsUs <= target) idx = j;
+  }
+  try { decoder.reset(); decoder.configure(config); } catch (e) {}
+  nextSample = idx;
+  flushed = false;
+  mediaOffsetUs = samples[idx].ctsUs + loopOffsetUs - firstTsUs;
+  playbackStart = now() + 100;
+  post({ type: "log", message: "recovered at sample " + idx });
+}
+
+function submit() {
+  var media = mediaNowUs();
+  while (nextSample < samples.length && !stopped) {
+    var s = samples[nextSample];
+    if (s.ctsUs > media + opts.leadMs * 1000) break;
+    if (decoder.decodeQueueSize >= opts.maxDecodeQueue) break;
+    if (frames.length >= opts.maxFrameQueue) break;
+    if (opts.simulateFrameCostMs > 0) {
+      var until = now() + opts.simulateFrameCostMs;
+      while (now() < until) { /* synthetic CPU cost for desktop validation */ }
+    }
+    try {
+      decoder.decode(new EncodedVideoChunk({
+        type: s.isKey ? "key" : "delta",
+        timestamp: s.ctsUs + loopOffsetUs,
+        duration: s.durUs,
+        data: bytes.subarray(s.offset, s.offset + s.size)
+      }));
+    } catch (e) { onError(e); break; }
+    stats.decodeQueueMax = Math.max(stats.decodeQueueMax, decoder.decodeQueueSize);
+    stats.submitted++;
+    nextSample++;
+  }
+  if (nextSample >= samples.length && !flushed) {
+    flushed = true;
+    try { decoder.flush().catch(onError); } catch (e) { onError(e); }
+  }
+}
+
+function present() {
+  var media = mediaNowUs();
+  var due = [];
+  while (frames.length && frames[0].tsUs <= media + 2000) due.push(frames.shift());
+  if (!due.length) return;
+
+  // If several frames are due, present only the newest. Drawing every due
+  // frame in one tick shows a burst and hides the fact that the player is
+  // behind; dropping the older due frames is the honest real-time behaviour.
+  var chosen = due[due.length - 1];
+  for (var d = 0; d < due.length - 1; d++) {
+    try { due[d].frame.close(); } catch (e) {}
+    stats.dropped++;
+    stats.late++;
+  }
+  var lateUs = media - chosen.tsUs;
+  if (lateUs > opts.lateMs * 1000) {
+    try { chosen.frame.close(); } catch (e) {}
+    stats.dropped++;
+    stats.late++;
+    return;
+  }
+  var t = now();
+  try { ctx.drawImage(chosen.frame, 0, 0, canvasW, canvasH); } catch (e) { /* ignore */ }
+  stats.paintMs.push(now() - t);
+  try { chosen.frame.close(); } catch (e) {}
+  stats.presented++;
+  if (stats.firstPresentedTs === null) {
+    stats.firstPresentedTs = chosen.tsUs;
+    post({ type: "first_frame", tsUs: chosen.tsUs });
+  }
+  if (!stats.firstPresentedAt) stats.firstPresentedAt = now();
+  var sec = Math.floor(chosen.tsUs / 1e6);
+  if (sec !== stats.lastBeepSec) {
+    stats.lastBeepSec = sec;
+    stats.beeps++;
+    post({ type: "beep", sec: sec });
+  }
+  stats.lastPresentedTs = chosen.tsUs;
+  lastPresentedMediaUs = chosen.tsUs;
+  lastPresentedAt = now();
+}
+
+function bufferedAheadMs() {
+  if (nextSample <= 0) return 0;
+  return Math.max(0, (samples[nextSample - 1].ctsUs + loopOffsetUs - mediaNowUs()) / 1000);
+}
+
+function startRebuffer() {
+  if (rebuffering) return;
+  rebuffering = true;
+  stats.rebuffers++;
+  playing = false;
+  post({ type: "log", message: "rebuffering (stall)" });
+  var checker = setInterval(function () {
+    if (stopped || frames.length >= 2 || nextSample >= samples.length) {
+      clearInterval(checker);
+      mediaOffsetUs = (frames.length ? frames[0].tsUs : mediaNowUs()) - firstTsUs;
+      playbackStart = now() + 80;
+      playing = true;
+      rebuffering = false;
+    }
+  }, 50);
+}
+
+function checkUnderrun() {
+  if (!playing || rebuffering) return;
+  var media = mediaNowUs();
+  if (frames.length === 0 && nextSample < samples.length && lastPresentedAt > 0) {
+    var silent = now() - lastPresentedAt;
+    if (silent > 150) {
+      if (!stallSince) { stallSince = now(); stats.stalls++; }
+      if (silent > 500) { stallSince = 0; startRebuffer(); }
+    }
+  } else {
+    stallSince = 0;
+  }
+}
+
+function restartLoop() {
+  loop++;
+  loopOffsetUs = loop * durationUs;
+  try { decoder.reset(); decoder.configure(config); } catch (e) {}
+  for (var i = 0; i < frames.length; i++) { try { frames[i].frame.close(); } catch (e) {} }
+  frames = [];
+  nextSample = 0;
+  flushed = false;
+  mediaOffsetUs += durationUs;
+  playbackStart = now() + 120;
+  post({ type: "log", message: "loop " + (loop + 1) });
+}
+
+function finish() {
+  if (done) return;
+  done = true;
+  stopped = true;
+  playing = false;
+  var wall = startedAt ? now() - startedAt : 0;
+  post({
+    type: "done",
+    stats: {
+      presented: stats.presented,
+      dropped: stats.dropped,
+      late: stats.late,
+      stalls: stats.stalls,
+      rebuffers: stats.rebuffers,
+      errors: stats.errors,
+      recoveries: stats.recoveries,
+      decode_queue_max: stats.decodeQueueMax,
+      frame_queue_max: stats.frameQueueMax,
+      queue_drops: stats.queueDrops,
+      submitted: stats.submitted,
+      ticks: stats.ticks,
+      present_calls: stats.presentCalls,
+      first_frame_ts: stats.firstFrameTs,
+      last_frame_ts: stats.lastFrameTs,
+      first_presented_ts: stats.firstPresentedTs,
+      last_presented_ts: stats.lastPresentedTs,
+      paint_p50_ms: percentile(stats.paintMs, 50),
+      paint_p95_ms: percentile(stats.paintMs, 95),
+      paint_max_ms: stats.paintMs.length ? +Math.max.apply(null, stats.paintMs).toFixed(3) : null,
+      buffered_min_ms: stats.bufferedMinMs,
+      buffered_max_ms: stats.bufferedMaxMs,
+      loops_completed: loop + 1,
+      beeps: stats.beeps,
+      sync_corrections: stats.syncCorrections,
+      startup_ms: stats.firstPresentedAt ? +(stats.firstPresentedAt - startedAt).toFixed(1) : null,
+      wall_ms: +wall.toFixed(1),
+      fps_overall: wall > 0 ? +((stats.presented / wall) * 1000).toFixed(2) : 0,
+      fps_media: (stats.firstPresentedTs != null && stats.lastPresentedTs != null && stats.lastPresentedTs > stats.firstPresentedTs)
+        ? +(((stats.presented - 1) / ((stats.lastPresentedTs - stats.firstPresentedTs) / 1e6))).toFixed(2)
+        : null
+    }
+  });
+}
+
+function tick() {
+  if (stopped) return;
+  stats.ticks++;
+  if (playing || rebuffering) {
+    submit();
+    if (playing) { stats.presentCalls++; present(); }
+    var b = bufferedAheadMs();
+    if (stats.bufferedMinMs === null || b < stats.bufferedMinMs) stats.bufferedMinMs = b;
+    if (b > stats.bufferedMaxMs) stats.bufferedMaxMs = b;
+    checkUnderrun();
+    if (nextSample >= samples.length && flushed && frames.length === 0 && decoder.decodeQueueSize === 0 && !rebuffering) {
+      if (loop + 1 < opts.loops) restartLoop();
+      else finish();
+    }
+  }
+  var t = now();
+  if (t - lastStatsAt > 500) {
+    lastStatsAt = t;
+    var wall = startedAt ? (t - startedAt) / 1000 : 0;
+    post({
+      type: "stats",
+      presented: stats.presented,
+      dropped: stats.dropped,
+      late: stats.late,
+      stalls: stats.stalls,
+      rebuffers: stats.rebuffers,
+      errors: stats.errors,
+      decoder_queue: decoder ? decoder.decodeQueueSize : 0,
+      frame_queue: frames.length,
+      media_time_ms: Math.max(0, (mediaNowUs() - firstTsUs) / 1000),
+      buffered_ahead_ms: Math.round(bufferedAheadMs()),
+      fps: wall > 0 ? +((stats.presented / wall)).toFixed(2) : 0,
+      paint_p50_ms: percentile(stats.paintMs, 50)
+    });
+  }
+  // The main thread drives this with requestAnimationFrame. A worker timer is
+  // throttled in background tabs and would silently reduce presentation rate.
+}
+
+self.onmessage = function (ev) {
+  var m = ev.data || {};
+  if (m.type === "init") {
+    ctx = m.canvas.getContext("2d", { alpha: false });
+    canvasW = m.canvas.width; canvasH = m.canvas.height;
+    config = m.config; samples = m.samples; bytes = new Uint8Array(m.bytes);
+    opts.leadMs = m.options.leadMs; opts.loops = m.options.loops;
+    opts.maxDecodeQueue = m.options.maxDecodeQueue; opts.maxFrameQueue = m.options.maxFrameQueue;
+    opts.lateMs = m.options.lateMs; opts.targetFps = m.options.targetFps;
+    opts.simulateFrameCostMs = m.options.simulateFrameCostMs || 0;
+    firstTsUs = samples.length ? samples[0].ctsUs : 0;
+    var last = samples.length ? samples[samples.length - 1] : { ctsUs: 0, durUs: 0 };
+    durationUs = Math.max(1, last.ctsUs + last.durUs - firstTsUs);
+    post({ type: "ready", worker_video_decoder: typeof VideoDecoder !== "undefined", samples: samples.length, width: canvasW, height: canvasH, duration_us: durationUs });
+    tick();  } else if (m.type === "play") {
+    if (!decoder) makeDecoder();
+    if (!started) { started = true; startedAt = now(); }
+    if (!playing) { playbackStart = now() + 200; playing = true; }
+    tick();
+  } else if (m.type === "tick") {
+    tick();
+  } else if (m.type === "sync") {
+    var corrUs = Math.max(-10000, Math.min(10000, (m.drift_ms || 0) * 1000 * 0.3));
+    if (Math.abs(corrUs) > 100) {
+      mediaOffsetUs += corrUs;
+      stats.syncCorrections++;
+    }
+  } else if (m.type === "pause") {
+    mediaOffsetUs = mediaNowUs() - firstTsUs;
+    playing = false;
+  } else if (m.type === "resume") {
+    playbackStart = now();
+    playing = true;
+  } else if (m.type === "stop") {
+    stopped = true; playing = false;
+    for (var i = 0; i < frames.length; i++) { try { frames[i].frame.close(); } catch (e) {} }
+    frames = [];
+    try { decoder.close(); } catch (e) {}
+    finish();
+  }
+};
+</script>
+
+<script>
+/**
+ * lib/mp4-demux.js — minimal ISO-BMFF (MP4) demuxer for WebCodecs.
+ *
+ * This is the piece of plumbing that every "video without a <video> element"
+ * implementation needs: the browser will decode, but something has to hand it
+ * sample-accurate encoded chunks with timestamps.
+ *
+ * Scope: single video track, AVCC (avc1/avc3) or VP8/VP9 in ISO-BMFF, both
+ * progressive (stbl sample tables) and fragmented (moof/trun) layouts.
+ * Deliberately no audio, no edit lists, no ctts reordering — enough to measure
+ * the cost of client-side demuxing, not a general-purpose muxer.
+ */
+
+/**
+ * Byte readers that accept either a Uint8Array or a DataView.
+ * Every call site in this file passes the DataView, so indexing it directly
+ * (d[o]) would silently yield undefined and poison every parse.
+ */
+const byte = (d, o) => (typeof d.getUint8 === "function" ? d.getUint8(o) : d[o]);
+const u16 = (d, o) => (byte(d, o) << 8) | byte(d, o + 1);
+const u32 = (d, o) => ((byte(d, o) << 24) | (byte(d, o + 1) << 16) | (byte(d, o + 2) << 8) | byte(d, o + 3)) >>> 0;
+const u64 = (d, o) => u32(d, o) * 4294967296 + u32(d, o + 4);
+const fourcc = (d, o) => String.fromCharCode(byte(d, o), byte(d, o + 1), byte(d, o + 2), byte(d, o + 3));
+
+/** Walk one level of boxes inside [start, end). */
+function children(view, start, end) {
+  const out = [];
+  let off = start;
+  while (off + 8 <= end) {
+    let size = u32(view, off);
+    const type = fourcc(view, off + 4);
+    let header = 8;
+    if (size === 1) {
+      size = u64(view, off + 8);
+      header = 16;
+    } else if (size === 0) {
+      size = end - off;
+    }
+    if (size < header || off + size > end) break;
+    out.push({ type, start: off + header, end: off + size, boxStart: off });
+    off += size;
+  }
+  return out;
+}
+
+const find = (list, type) => list.find((b) => b.type === type);
+const findAll = (list, type) => list.filter((b) => b.type === type);
+
+/**
+ * @param {Uint8Array} bytes whole file
+ * @returns {{codec:string, description:Uint8Array|null, width:number, height:number,
+ *            timescale:number, container:'progressive'|'fragmented',
+ *            samples:Array<{offset:number,size:number,dtsUs:number,durUs:number,isKey:boolean}>}}
+ */
+function demuxMp4(bytes) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const top = children(view, 0, bytes.length);
+  const moov = find(top, "moov");
+  if (!moov) throw new Error("no moov box");
+
+  const moovKids = children(view, moov.start, moov.end);
+  const trak = findAll(moovKids, "trak").find((t) => {
+    const mdia = find(children(view, t.start, t.end), "mdia");
+    if (!mdia) return false;
+    const hdlr = find(children(view, mdia.start, mdia.end), "hdlr");
+    if (!hdlr) return false;
+    return fourcc(view, hdlr.start + 8) === "vide";
+  });
+  if (!trak) throw new Error("no video trak");
+
+  const tkhd = find(children(view, trak.start, trak.end), "tkhd");
+  let width = 0;
+  let height = 0;
+  if (tkhd) {
+    // v0: width/height are the last two 16.16 fixed-point fields
+    const base = tkhd.start + 4 + (view.getUint8(tkhd.start) === 1 ? 32 : 20);
+    width = view.getUint16(base + 52) >> 0;
+    height = view.getUint16(base + 56) >> 0;
+  }
+
+  const mdia = find(children(view, trak.start, trak.end), "mdia");
+  const mdhd = find(children(view, mdia.start, mdia.end), "mdhd");
+  const timescale = mdhd ? u32(view, mdhd.start + (view.getUint8(mdhd.start) === 1 ? 20 : 12)) : 90000;
+  const minf = find(children(view, mdia.start, mdia.end), "minf");
+  const stbl = find(children(view, minf.start, minf.end), "stbl");
+  const stblKids = children(view, stbl.start, stbl.end);
+
+  // ---- sample description: codec + avcC ----
+  const stsd = find(stblKids, "stsd");
+  const entry = children(view, stsd.start + 8, stsd.end)[0];
+  const entryType = entry.type;
+  let codec;
+  let description = null;
+  if (entryType === "avc1" || entryType === "avc3") {
+    const avcC = find(children(view, entry.start + 78, entry.end), "avcC");
+    if (avcC) {
+      description = bytes.slice(avcC.start, avcC.end);
+      codec = `avc1.${[description[1], description[2], description[3]]
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")}`;
+    } else {
+      codec = "avc1.42E01E";
+    }
+  } else if (entryType === "vp08") {
+    codec = "vp8";
+  } else if (entryType === "vp09") {
+    codec = "vp09.00.10.08";
+  } else {
+    throw new Error(`unsupported sample entry: ${entryType}`);
+  }
+
+  // ---- sample tables ----
+  const stsz = find(stblKids, "stsz");
+  const stco = find(stblKids, "stco") ?? find(stblKids, "co64");
+  const stsc = find(stblKids, "stsc");
+  const stts = find(stblKids, "stts");
+  const stss = find(stblKids, "stss");
+
+  const sampleCount = stsz ? u32(view, stsz.start + 8) : 0;
+  const fixedSize = stsz ? u32(view, stsz.start + 4) : 0;
+  const sizes = [];
+  for (let i = 0; i < sampleCount; i++) {
+    sizes.push(fixedSize || u32(view, stsz.start + 12 + i * 4));
+  }
+
+  // durations -> DTS
+  const durations = [];
+  if (stts) {
+    const n = u32(view, stts.start + 4);
+    for (let i = 0; i < n; i++) {
+      const count = u32(view, stts.start + 8 + i * 8);
+      const delta = u32(view, stts.start + 12 + i * 8);
+      for (let k = 0; k < count; k++) durations.push(delta);
+    }
+  }
+
+  // chunk -> first sample index
+  const chunkFirstSample = [];
+  if (stsc) {
+    const n = u32(view, stsc.start + 4);
+    const runs = [];
+    for (let i = 0; i < n; i++) {
+      runs.push({
+        firstChunk: u32(view, stsc.start + 8 + i * 12),
+        perChunk: u32(view, stsc.start + 12 + i * 12),
+      });
+    }
+    const chunkCount = stco ? u32(view, stco.start + 4) : 0;
+    let sampleIdx = 0;
+    for (let c = 1; c <= chunkCount; c++) {
+      let per = 0;
+      for (const r of runs) if (c >= r.firstChunk) per = r.perChunk;
+      chunkFirstSample[c] = { first: sampleIdx, count: per };
+      sampleIdx += per;
+    }
+  }
+
+  const chunkOffsets = [];
+  if (stco) {
+    const n = u32(view, stco.start + 4);
+    const wide = stco.type === "co64";
+    for (let i = 0; i < n; i++) {
+      chunkOffsets.push(wide ? u64(view, stco.start + 8 + i * 8) : u32(view, stco.start + 8 + i * 4));
+    }
+  }
+
+  const keySet = new Set();
+  if (stss) {
+    const n = u32(view, stss.start + 4);
+    for (let i = 0; i < n; i++) keySet.add(u32(view, stss.start + 8 + i * 4));
+  }
+
+  let samples = [];
+  let container = "progressive";
+
+  if (sampleCount === 0) {
+    // ---- fragmented: moof/traf/trun ----
+    container = "fragmented";
+    const moofs = findAll(top, "moof");
+    if (!moofs.length) throw new Error("moov has no samples and no moof boxes");
+    const mdhdScale = timescale || 1000;
+    for (const moof of moofs) {
+      const trafs = children(view, moof.start, moof.end).filter((b) => b.type === "traf");
+      for (const traf of trafs) {
+        const trafKids = children(view, traf.start, traf.end);
+        const tfhd = find(trafKids, "tfhd");
+        const tfdt = find(trafKids, "tfdt");
+        if (!tfhd) continue;
+        const tfFlags = u32(view, tfhd.start) & 0xffffff;
+        let p = tfhd.start + 4;
+        if (tfFlags & 0x01) p += 8; // base-data-offset
+        if (tfFlags & 0x02) p += 4; // sample-description-index
+        const defaultDuration = tfFlags & 0x08 ? (p += 4, u32(view, p - 4)) : 0;
+        const defaultSize = tfFlags & 0x10 ? (p += 4, u32(view, p - 4)) : 0;
+        let baseTime = tfdt ? (view.getUint8(tfdt.start) === 1 ? u64(view, tfdt.start + 4) : u32(view, tfdt.start + 4)) : 0;
+        const baseOffset = tfFlags & 0x01 ? u64(view, tfhd.start + 4) : moof.boxStart;
+        const truns = findAll(trafKids, "trun");
+        for (const trun of truns) {
+          const trFlags = u32(view, trun.start) & 0xffffff;
+          const count = u32(view, trun.start + 4);
+          // Only the first sample's flags are usually present; the rest are
+          // implied delta frames. Treating every sample as a keyframe would make
+          // the decoder attempt standalone decode of P-frames.
+          const perSampleFlags = !!(trFlags & 0x400);
+          let q = trun.start + 8;
+          const dataOffset = trFlags & 0x01 ? ((q += 4), view.getInt32(q - 4)) : 0;
+          let firstFlags = null;
+          if (trFlags & 0x04) {
+            firstFlags = u32(view, q);
+            q += 4;
+          }
+          let cursor = baseOffset + dataOffset;
+          for (let i = 0; i < count; i++) {
+            const dur = trFlags & 0x100 ? ((q += 4), u32(view, q - 4)) : defaultDuration;
+            const size = trFlags & 0x200 ? ((q += 4), u32(view, q - 4)) : defaultSize;
+            const flags = perSampleFlags ? ((q += 4), u32(view, q - 4)) : i === 0 ? firstFlags : -1;
+            const cto = trFlags & 0x800 ? ((q += 4), view.getInt32(q - 4)) : 0;
+            // sample_flags bit 26 = sample_is_non_sync_sample; absence means sync.
+            const isKey = flags >= 0 && ((flags >>> 26) & 1) === 0;
+            samples.push({
+              offset: cursor,
+              size,
+              dtsUs: Math.round((baseTime / mdhdScale) * 1e6),
+              durUs: Math.round((dur / mdhdScale) * 1e6),
+              isKey,
+              ctsUs: Math.round(((baseTime + cto) / mdhdScale) * 1e6),
+            });
+            baseTime += dur;
+            cursor += size;
+          }
+        }
+      }
+    }
+  } else {
+    // ---- progressive ----
+    let dts = 0;
+    for (let i = 0; i < sampleCount; i++) {
+      const chunk = chunkFirstSample.findIndex((c) => c && i >= c.first && i < c.first + c.count);
+      let offset = 0;
+      if (chunk >= 0) {
+        const c = chunkFirstSample[chunk];
+        const chunkIndex = chunkFirstSample.findIndex((x) => x && x === c);
+        let within = 0;
+        for (let k = 0; k < i - c.first; k++) within += sizes[c.first + k] ?? 0;
+        offset = chunkOffsets[chunkIndex] + within;
+      }
+      const dur = durations[i] ?? durations.at(-1) ?? 1000;
+      samples.push({
+        offset,
+        size: sizes[i],
+        dtsUs: Math.round((dts / timescale) * 1e6),
+        durUs: Math.round((dur / timescale) * 1e6),
+        isKey: keySet.size ? keySet.has(i + 1) : true,
+        ctsUs: Math.round((dts / timescale) * 1e6),
+      });
+      dts += dur;
+    }
+  }
+
+  return {
+    codec,
+    description,
+    width,
+    height,
+    timescale,
+    container,
+    samples: normalizeKeyframes(samples.filter((s) => s.size > 0)),
+  };
+}
+
+/**
+ * A stream whose first sample is flagged non-sync cannot be decoded from the
+ * start, so guarantee at least one sync sample at the head. This is a demuxer
+ * repair, not a guess about the content: the first sample of a playable file is
+ * always a random-access point in practice.
+ */
+function normalizeKeyframes(samples) {
+  if (samples.length && !samples.some((s) => s.isKey)) samples[0].isKey = true;
+  return samples;
+}
+
+/** Build EncodedVideoChunk init payloads in decode order. */
+function chunksFrom(bytes, track) {
+  return track.samples.map((s) => ({
+    type: s.isKey ? "key" : "delta",
+    timestamp: s.ctsUs ?? s.dtsUs,
+    duration: s.durUs,
+    data: bytes.subarray(s.offset, s.offset + s.size),
+  }));
+}
+
+window.demuxMp4 = demuxMp4;
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var PAGE_VERSION = "phase11-1";
+  var worker = null, canvas = null, result = null, media = null;
+  var startedAt = 0, done = false, paused = false;
+  var audioCtx = null, audioBuffer = null, audioSrc = null;
+  var audioStartCtx = 0, audioStarted = false, audioReady = false;
+  var audioDrift = [], audioResyncs = 0, audioSamples = 0;
+  var lastVideoSec = 0, firstFrameSeen = false;
+  var heapStart = null;
+  var $ = function (id) { return document.getElementById(id); };
+  function now() { return performance.now(); }
+  function log(msg) {
+    var el = $("log");
+    el.textContent = (el.textContent ? el.textContent + "\n" : "") + "[" + new Date().toISOString().slice(11, 19) + "] " + msg;
+    el.scrollTop = el.scrollHeight;
+  }
+  function parseUA(ua) {
+    var m = /(?:HeadlessChrome|Chromium|Chrome)\/(\d+)/.exec(ua || "");
+    return { major: m ? parseInt(m[1], 10) : null };
+  }
+  function collectInputs() {
+    return { model_and_year: $("inModel").value, software_version: $("inSw").value, processor: $("inCpu").value, notes: $("inNotes").value };
+  }
+  function maxFrameQueueFor(leadMs) {
+    // A frame queue must be large enough to hold the requested lead; otherwise
+    // the decoder is told to stay ahead and the queue immediately drops frames.
+    return Math.min(24, Math.ceil(leadMs / 33) + 4);
+  }
+  function audioOn() { return $("audio").value === "tone"; }
+  function mean(values) {
+    if (!values.length) return null;
+    return +(values.reduce(function (a, b) { return a + b; }, 0) / values.length).toFixed(2);
+  }
+  function maxAbs(values) {
+    if (!values.length) return null;
+    var m = 0;
+    for (var i = 0; i < values.length; i++) m = Math.max(m, Math.abs(values[i]));
+    return +m.toFixed(2);
+  }
+  async function prepareAudio() {
+    if (!audioOn()) return;
+    try {
+      audioCtx = new AudioContext();
+      await audioCtx.resume();
+      var res = await fetch("media/sync-tone.wav", { cache: "force-cache" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      var buf = await res.arrayBuffer();
+      audioBuffer = await audioCtx.decodeAudioData(buf);
+      audioReady = true;
+      log("audio ready · " + audioBuffer.sampleRate + " Hz · " + audioBuffer.duration.toFixed(2) + " s");
+      if (firstFrameSeen) startAudio(lastVideoSec);
+    } catch (e) {
+      log("audio unavailable: " + ((e && e.message) || e));
+    }
+  }
+  function startAudio(videoSec) {
+    if (!audioBuffer || !audioCtx) return;
+    try { if (audioSrc) { audioSrc.stop(); audioSrc.disconnect(); } } catch (e) {}
+    var offset = ((videoSec % audioBuffer.duration) + audioBuffer.duration) % audioBuffer.duration;
+    var when = audioCtx.currentTime;
+    audioSrc = audioCtx.createBufferSource();
+    audioSrc.buffer = audioBuffer;
+    audioSrc.loop = true;
+    audioSrc.connect(audioCtx.destination);
+    audioSrc.start(when, offset);
+    audioStartCtx = when - offset;
+    audioStarted = true;
+    log("audio started at " + offset.toFixed(3) + " s");
+  }
+  function sampleDrift(mediaSec) {
+    if (!audioStarted || !audioCtx) return;
+    var audioSec = audioCtx.currentTime - audioStartCtx;
+    var d = (audioSec - mediaSec) % audioBuffer.duration;
+    if (d > audioBuffer.duration / 2) d -= audioBuffer.duration;
+    if (d < -audioBuffer.duration / 2) d += audioBuffer.duration;
+    var ms = d * 1000;
+    audioDrift.push(ms);
+    audioSamples++;
+    if (Math.abs(ms) > 250) {
+      audioResyncs++;
+      startAudio(mediaSec);
+    } else if (Math.abs(ms) > 15 && worker) {
+      // Audio is the master: slew the video clock toward it instead of
+      // restarting the audio and causing an audible click.
+      worker.postMessage({ type: "sync", drift_ms: ms });
+    }
+  }
+  function percentile(values, p) {
+    if (!values || !values.length) return null;
+    var v = values.slice().sort(function (a, b) { return a - b; });
+    var i = Math.min(v.length - 1, Math.max(0, Math.ceil((p / 100) * v.length) - 1));
+    return +v[i].toFixed(3);
+  }
+
+  function row(label, value) {
+    var tr = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.className = "k"; td1.textContent = label;
+    var td2 = document.createElement("td"); td2.className = "v mono"; td2.textContent = value;
+    tr.appendChild(td1); tr.appendChild(td2);
+    $("finalTable").getElementsByTagName("tbody")[0].appendChild(tr);
+  }
+  function liveRow(label, value) {
+    var tr = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.className = "k"; td1.textContent = label;
+    var td2 = document.createElement("td"); td2.className = "v mono"; td2.textContent = value;
+    tr.appendChild(td1); tr.appendChild(td2);
+    $("liveTable").getElementsByTagName("tbody")[0].appendChild(tr);
+  }
+  function clearTable(id) {
+    var tb = $(id).getElementsByTagName("tbody")[0];
+    while (tb.firstChild) tb.removeChild(tb.firstChild);
+  }
+
+  function keyItem(label, value, status) {
+    var d = document.createElement("div"); d.className = "keyitem";
+    var b = document.createElement("b"); b.textContent = label;
+    var s = document.createElement("span"); s.textContent = value;
+    if (status) s.className = status;
+    d.appendChild(b); d.appendChild(s);
+    $("keyGrid").appendChild(d);
+  }
+  function renderKeys(r) {
+    var g = $("keyGrid"); while (g.firstChild) g.removeChild(g.firstChild);
+    var v = r.verdict;
+    keyItem("Playback", v.classification, v.classification === "real-time" ? "ok" : v.classification === "marginal" ? "warn" : "no");
+    keyItem("Presented fps", String(v.fps), v.fps >= 28 ? "ok" : v.fps >= 24 ? "warn" : "no");
+    keyItem("Presented frames", String(r.run.presented), "ok");
+    keyItem("Dropped", String(r.run.dropped), r.run.dropped <= 5 ? "ok" : "warn");
+    keyItem("Rebuffers", String(r.run.rebuffers), r.run.rebuffers === 0 ? "ok" : "warn");
+    keyItem("Paint p50", (r.run.paint_p50_ms == null ? "—" : r.run.paint_p50_ms + " ms"), "ok");
+    keyItem("A/V drift", r.audio.drift_max_abs_ms == null ? "—" : r.audio.drift_max_abs_ms + " ms",
+      r.audio.drift_max_abs_ms == null ? "warn" : r.audio.drift_max_abs_ms <= 50 ? "ok" : "warn");
+    keyItem("Audio", r.audio.enabled ? (r.audio.state || "on") : "off", r.audio.enabled ? "ok" : "warn");
+    keyItem("Chromium", String(r.browser.chromium_major), "ok");
+    keyItem("Lead", r.options.lead_ms + " ms", "ok");
+  }
+
+  function buildVerdict(r) {
+    var fps = r.run.fps_overall;
+    var dropPct = r.run.presented ? (r.run.dropped / r.run.presented) * 100 : 100;
+    var classification = fps >= 28 && dropPct <= 5 && r.run.rebuffers <= 1 ? "real-time" :
+      fps >= 24 ? "marginal" : "below-real-time";
+    return {
+      fps: +fps.toFixed(2),
+      drop_pct: +dropPct.toFixed(1),
+      classification: classification,
+      summary: fps.toFixed(1) + " fps · " + r.run.presented + " presented · " +
+        r.run.dropped + " dropped · " + r.run.rebuffers + " rebuffer(s)"
+    };
+  }
+
+  function shortCode(r) {
+    return [
+      "T11v1",
+      "ua=" + (r.browser.chromium_major == null ? "?" : r.browser.chromium_major),
+      "fps=" + r.verdict.fps,
+      "pres=" + r.run.presented,
+      "drop=" + r.run.dropped,
+      "late=" + r.run.late,
+      "stall=" + r.run.stalls,
+      "rebuf=" + r.run.rebuffers,
+      "paint=" + (r.run.paint_p50_ms == null ? "?" : r.run.paint_p50_ms),
+      "adrift=" + (r.audio.drift_max_abs_ms == null ? "?" : r.audio.drift_max_abs_ms),
+      "abeeps=" + r.audio.beeps,
+      "lead=" + r.options.lead_ms,
+      "loops=" + r.options.loops
+    ].join("|");
+  }
+
+  function jsonText() {
+    if (!result) return "";
+    result.inputs = collectInputs();
+    return JSON.stringify(result, null, 2);
+  }
+
+  function finalize(stats) {
+    if (done) return;
+    done = true;
+    var wall = stats.wall_ms || (startedAt ? now() - startedAt : 0);
+    var leadMs = Number($("lead").value);
+    var loops = Number($("loops").value);
+    var durationS = media && media.duration_s ? media.duration_s : 6;
+    var r = {
+      schema: "tesla-player-diagnostic/v1",
+      page_version: PAGE_VERSION,
+      started_at: new Date(Date.now() - wall).toISOString(),
+      finished_at: new Date().toISOString(),
+      inputs: collectInputs(),
+      browser: {
+        user_agent: navigator.userAgent,
+        chromium_major: parseUA(navigator.userAgent).major,
+        hardware_concurrency: navigator.hardwareConcurrency || null,
+        device_memory_gb: typeof navigator.deviceMemory === "number" ? navigator.deviceMemory : null,
+        secure_context: window.isSecureContext === true
+      },
+      options: {
+        lead_ms: leadMs,
+        loops: loops,
+        target_fps: 30,
+        max_decode_queue: 6,
+        max_frame_queue: maxFrameQueueFor(leadMs),
+        late_ms: 50,
+        audio: audioOn() ? "tone" : "off",
+        simulate_frame_cost_ms: Number($("simulate").value) || 0
+      },
+      audio: {
+        enabled: audioOn(),
+        state: audioCtx ? audioCtx.state : null,
+        sample_rate: audioBuffer ? audioBuffer.sampleRate : null,
+        base_latency_ms: audioCtx && audioCtx.baseLatency != null ? +(audioCtx.baseLatency * 1000).toFixed(2) : null,
+        output_latency_ms: audioCtx && audioCtx.outputLatency != null ? +(audioCtx.outputLatency * 1000).toFixed(2) : null,
+        drift_mean_ms: mean(audioDrift),
+        drift_max_abs_ms: maxAbs(audioDrift),
+        samples: audioSamples,
+        resyncs: audioResyncs,
+        sync_corrections: stats.sync_corrections || 0,
+        beeps: stats.beeps || 0
+      },
+      memory: {
+        js_heap_start_mb: heapStart,
+        js_heap_end_mb: (performance.memory && typeof performance.memory.usedJSHeapSize === "number")
+          ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(2)
+          : null,
+        note: "Main-thread JS heap only; worker/GPU video memory is not observable."
+      },
+      media: media,
+      preflight: {
+        worker_video_decoder: workerReady ? true : false,
+        offscreen_canvas: typeof OffscreenCanvas !== "undefined",
+        transfer_control: typeof HTMLCanvasElement !== "undefined" && "transferControlToOffscreen" in HTMLCanvasElement.prototype
+      },
+      run: {
+        presented: stats.presented,
+        dropped: stats.dropped,
+        late: stats.late,
+        stalls: stats.stalls,
+        rebuffers: stats.rebuffers,
+        errors: stats.errors,
+        recoveries: stats.recoveries,
+        decode_queue_max: stats.decode_queue_max,
+        frame_queue_max: stats.frame_queue_max,
+        queue_drops: stats.queue_drops,
+        submitted: stats.submitted,
+        ticks: stats.ticks,
+        present_calls: stats.present_calls,
+        pump_ticks: pumpTicks,
+        pump_fps: +(pumpTicks / Math.max(0.001, wall / 1000)).toFixed(2),
+        first_frame_ts: stats.first_frame_ts,
+        first_presented_ts: stats.first_presented_ts,
+        last_presented_ts: stats.last_presented_ts,
+        paint_p50_ms: stats.paint_p50_ms,
+        paint_p95_ms: stats.paint_p95_ms,
+        paint_max_ms: stats.paint_max_ms,
+        buffered_min_ms: stats.buffered_min_ms,
+        buffered_max_ms: stats.buffered_max_ms,
+        loops_completed: stats.loops_completed,
+        target_duration_s: loops * durationS,
+        partial: stats.loops_completed < loops,
+        startup_ms: stats.startup_ms,
+        fps_media: stats.fps_media,
+        wall_ms: +wall.toFixed(1),
+        fps_overall: +(stats.presented / Math.max(0.001, wall / 1000)).toFixed(2)
+      },
+      verdict: null
+    };
+    r.verdict = buildVerdict(r);
+    result = r;
+    window.__playerResult = r;
+    window.__playerDone = true;
+    $("verdictLine").textContent = r.verdict.summary;
+    $("verdictSub").textContent = r.verdict.classification + " · " + r.verdict.drop_pct + "% dropped · " + r.run.loops_completed + " loop(s)";
+    $("status").textContent = "Finished.";
+    clearTable("finalTable");
+    row("Overall fps", r.run.fps_overall);
+    row("Presented / dropped / late", r.run.presented + " / " + r.run.dropped + " / " + r.run.late);
+    row("Stalls / rebuffers / errors", r.run.stalls + " / " + r.run.rebuffers + " / " + r.run.errors);
+    row("Decode queue max", r.run.decode_queue_max);
+    row("Frame queue max", r.run.frame_queue_max);
+    row("Paint p50 / p95 / max", r.run.paint_p50_ms + " / " + r.run.paint_p95_ms + " / " + r.run.paint_max_ms + " ms");
+    row("Buffered ahead min / max", r.run.buffered_min_ms + " / " + r.run.buffered_max_ms + " ms");
+    row("Loops completed", r.run.loops_completed);
+    row("A/V drift max / mean", (r.audio.drift_max_abs_ms == null ? "—" : r.audio.drift_max_abs_ms + " / " + r.audio.drift_mean_ms + " ms"));
+    row("Audio state / beeps", (r.audio.enabled ? (r.audio.state || "on") : "off") + " / " + r.audio.beeps);
+    row("Wall time", r.run.wall_ms + " ms");
+    renderKeys(r);
+    $("jsonOut").value = jsonText();
+    $("shortOut").textContent = shortCode(r);
+    $("pauseBtn").disabled = true;
+    $("stopBtn").disabled = true;
+    $("startBtn").disabled = true;
+    $("status").textContent = "Finished. Press Reset (reload) for a new run.";
+  }
+
+  var workerReady = false;
+  var pumpTicks = 0;
+  function pump() {
+    if (!worker || done) return;
+    pumpTicks++;
+    window.__playerPump = pumpTicks;
+    worker.postMessage({ type: "tick" });
+    requestAnimationFrame(pump);
+  }
+  function start() {
+    if (!worker) {
+      if (!$("confirm").checked) { $("status").textContent = "Confirm the parked checkbox first."; return; }
+      $("startBtn").disabled = true;
+      $("pauseBtn").disabled = false;
+      $("stopBtn").disabled = false;
+      $("status").textContent = "Fetching the local clip…";
+      clearTable("finalTable");
+      clearTable("liveTable");
+      done = false; paused = false; workerReady = false;
+      var src = $("workerSrc").textContent;
+      var blob = new Blob([src], { type: "text/javascript" });
+      var url = URL.createObjectURL(blob);
+      worker = new Worker(url);
+      var fetchT0 = now();
+      heapStart = (performance.memory && typeof performance.memory.usedJSHeapSize === "number")
+        ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(2)
+        : null;
+      prepareAudio();
+      worker.onerror = function (e) {
+        $("status").textContent = "Worker error: " + (e.message || "unknown");
+      };
+      worker.onmessage = function (ev) {
+        var m = ev.data || {};
+        if (m.type === "ready") {
+          workerReady = m.worker_video_decoder;
+          log("worker ready · VideoDecoder " + (workerReady ? "yes" : "no") + " · " + m.samples + " samples");
+          if (!workerReady) {
+            $("status").textContent = "This worker does not expose VideoDecoder; cannot run the player.";
+            return;
+          }
+          worker.postMessage({ type: "play" });
+        } else if (m.type === "first_frame") {
+          firstFrameSeen = true;
+          if (audioReady) startAudio(m.tsUs / 1e6);
+        } else if (m.type === "beep") {
+          var stage = document.querySelector(".stage");
+          if (stage) {
+            stage.classList.add("flash");
+            setTimeout(function () { stage.classList.remove("flash"); }, 90);
+          }
+        } else if (m.type === "stats") {
+          lastVideoSec = m.media_time_ms / 1000;
+          sampleDrift(lastVideoSec);
+          $("overlay").textContent =
+            "fps " + m.fps + "\nmedia " + Math.round(m.media_time_ms) + " / " + (Number($("loops").value) * 6000) + " ms\nbuffer " + m.buffered_ahead_ms + " ms\n" +
+            "queue " + m.decoder_queue + " decode · " + m.frame_queue + " frame\ndrop " + m.dropped + " · stall " + m.stalls + " · rebuf " + m.rebuffers;
+          clearTable("liveTable");
+          liveRow("Presented fps", m.fps);
+          liveRow("Media time", Math.round(m.media_time_ms) + " ms");
+          liveRow("Buffered ahead", m.buffered_ahead_ms + " ms");
+          liveRow("Decoder / frame queue", m.decoder_queue + " / " + m.frame_queue);
+          liveRow("Dropped / late", m.dropped + " / " + m.late);
+          liveRow("Stalls / rebuffers", m.stalls + " / " + m.rebuffers);
+          liveRow("Paint p50", (m.paint_p50_ms == null ? "—" : m.paint_p50_ms + " ms"));
+          liveRow("Audio drift", audioStarted
+            ? (audioDrift.length ? audioDrift[audioDrift.length - 1].toFixed(1) + " ms" : "starting")
+            : (audioOn() ? "preparing" : "off"));
+          liveRow("Errors", m.errors);
+        } else if (m.type === "log") {
+          log(m.message);
+        } else if (m.type === "error") {
+          log("decoder error: " + m.message);
+          $("status").textContent = "Decoder error; attempting recovery.";
+        } else if (m.type === "done") {
+          try { finalize(m.stats); }
+          catch (e) {
+            done = true;
+            $("status").textContent = "finalize error: " + ((e && e.message) || e);
+            log("finalize error: " + ((e && e.stack) || e));
+          }
+        }
+      };
+
+      fetch("media/720p-h264.mp4", { cache: "force-cache" }).then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.arrayBuffer();
+      }).then(function (buf) {
+        var fetchMs = +(now() - fetchT0).toFixed(1);
+        var bytes = new Uint8Array(buf);
+        var track = demuxMp4(bytes);
+        var samples = track.samples.map(function (s) {
+          return { offset: s.offset, size: s.size, dtsUs: s.dtsUs, ctsUs: s.ctsUs != null ? s.ctsUs : s.dtsUs, durUs: s.durUs, isKey: s.isKey };
+        });
+        media = {
+          url: "media/720p-h264.mp4",
+          bytes: bytes.length,
+          samples: samples.length,
+          width: track.width,
+          height: track.height,
+          duration_s: +(samples.reduce(function (a, s) { return a + s.durUs; }, 0) / 1e6).toFixed(2),
+          fetch_ms: fetchMs
+        };
+        log("demuxed " + samples.length + " samples · " + track.width + "×" + track.height + " · fetch " + fetchMs + " ms");
+        var off = $("out").transferControlToOffscreen();
+        worker.postMessage({
+          type: "init",
+          canvas: off,
+          config: {
+            codec: track.codec,
+            codedWidth: track.width,
+            codedHeight: track.height,
+            description: track.description,
+            optimizeForLatency: true,
+            hardwareAcceleration: "no-preference"
+          },
+          samples: samples,
+          bytes: bytes.buffer,
+          options: {
+            leadMs: Number($("lead").value),
+            loops: Number($("loops").value),
+            maxDecodeQueue: 6,
+            maxFrameQueue: maxFrameQueueFor(Number($("lead").value)),
+            lateMs: 50,
+            targetFps: 30,
+            simulateFrameCostMs: Number($("simulate").value) || 0
+          }
+        }, [off, bytes.buffer]);
+        startedAt = now();
+        requestAnimationFrame(pump);
+      }).catch(function (e) {
+        $("status").textContent = "Load failed: " + ((e && e.message) || e);
+        $("startBtn").disabled = false;
+      });
+    } else {
+      worker.postMessage({ type: "resume" });
+      paused = false;
+      $("pauseBtn").textContent = "Pause";
+    }
+  }
+
+  function pause() {
+    if (!worker) return;
+    if (!paused) {
+      worker.postMessage({ type: "pause" });
+      paused = true;
+      $("pauseBtn").textContent = "Resume";
+    } else {
+      worker.postMessage({ type: "resume" });
+      paused = false;
+      $("pauseBtn").textContent = "Pause";
+    }
+  }
+
+  function stop() {
+    if (worker) worker.postMessage({ type: "stop" });
+    $("pauseBtn").disabled = true;
+    $("stopBtn").disabled = true;
+    $("startBtn").disabled = false;
+  }
+
+  function copyJson() {
+    var text = jsonText();
+    function fallback() {
+      try {
+        var ta = $("jsonOut"); ta.focus(); ta.select();
+        $("copyStatus").textContent = document.execCommand("copy") ? "Copied (fallback)." : "Copy blocked; use Select all.";
+      } catch (e) { $("copyStatus").textContent = "Copy blocked; use Select all."; }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { $("copyStatus").textContent = "Copied " + text.length + " characters."; }, fallback);
+    } else fallback();
+  }
+  function downloadJson() {
+    try {
+      var blob = new Blob([jsonText()], { type: "application/json" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "tesla-player-" + new Date().toISOString().replace(/[:.]/g, "-") + ".json";
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { try { document.body.removeChild(a); } catch (e) {} URL.revokeObjectURL(url); }, 1500);
+      $("copyStatus").textContent = "Download started (if allowed).";
+    } catch (e) { $("copyStatus").textContent = "Download blocked; use Copy JSON or the short code."; }
+  }
+
+  $("confirm").onchange = function () { $("startBtn").disabled = !$("confirm").checked; };
+  $("startBtn").onclick = start;
+  $("pauseBtn").onclick = pause;
+  $("stopBtn").onclick = stop;
+  $("btnCopy").onclick = copyJson;
+  $("btnDownload").onclick = downloadJson;
+  $("btnSelect").onclick = function () {
+    var ta = $("jsonOut"); ta.focus(); ta.select();
+    if (ta.setSelectionRange) ta.setSelectionRange(0, ta.value.length);
+    $("copyStatus").textContent = "Selected. Use the browser's copy command.";
+  };
+  ["inModel", "inSw", "inCpu", "inNotes"].forEach(function (id) {
+    var el = $(id);
+    if (el) el.oninput = function () { if (result) { result.inputs = collectInputs(); $("jsonOut").value = jsonText(); } };
+  });
+
+  window.__player = {
+    start: start,
+    pause: pause,
+    stop: stop,
+    getResult: function () { return result; },
+    buildJson: jsonText,
+    shortCode: function () { return result ? shortCode(result) : ""; }
+  };
+  window.__playerReady = true;
+})();
+</script>
+</body>
+</html>
